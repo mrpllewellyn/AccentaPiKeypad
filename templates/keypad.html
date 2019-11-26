@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Raspberry Pi / Honeywell Accenta Gen3 Keypad</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function(){
+            namespace = '/raspberrykeypad'; // change to an empty string to use the global namespace
+            // the socket.io documentation recommends sending an explicit package upon connection
+            // this is specially important when using the global namespace
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+
+            function addStyleString(str) {
+                var node = document.createElement('style');
+                node.innerHTML = str;
+                document.body.appendChild(node);
+            }
+
+            socket.on('my response', function(msg) {
+                $('#log').append('<br>' + $('<div/>').text('# ' + msg.data).html());
+            });
+            // event handler for new connections
+            socket.on('connect', function() {
+                socket.emit('my event', {data: 'Web client connected'});
+            });
+            $('input.sync').on('input', function(event) {
+                socket.emit('button pressed', {who: $(this).attr('id')});
+                return false;
+            });
+			socket.on('update value', function(msg) {
+                $('input#'+msg.who).val(msg.data)
+            });
+
+
+        });
+    </script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css-frames-style.css') }}" />
+
+</head>
+<body>
+        <div id="header-wrapper">
+            <div id="header">
+				<input id="b0" value="0" type="button" class="sync"/>
+				<input id="b1" value="1" type="button" class="sync"/>
+				<input id="b2" value="2" type="button" class="sync"/>
+				<input id="b3" value="3" type="button" class="sync"/>
+				<input id="b4" value="4" type="button" class="sync"/>
+				<br>
+				<input id="b5" value="5" type="button" class="sync"/>
+				<input id="b6" value="6" type="button" class="sync"/>
+				<input id="b7" value="7" type="button" class="sync"/>
+				<input id="b8" value="8" type="button" class="sync"/>
+				<input id="b9" value="9" type="button" class="sync"/>
+				<br>
+				<input id="chime" value="chime" type="button" class="sync"/>
+				<input id="omit" value="omit" type="button" class="sync"/>
+				<input id="cancel" value="cancel" type="button" class="sync"/>
+				<br>
+				<input id="program" value="program" type="button" class="sync"/>
+				<input id="confirm" value="confirm" type="button" class="sync"/>
+				<input id="select" value="select" type="button" class="sync"/>
+				<br>
+				<input id="panic" value="panic" type="button" class="sync"/>
+				<br>
+            </div>
+        </div>
+        <div id="leftbar-wrapper">
+            <div id ="leftbar">
+        </div>
+        <div id="rightbar-wrapper">
+            <div id ="rightbar">
+            </div>
+        </div>
+        <div id="footer-wrapper">
+            <div id="footer">
+				PA: <input id="state_PA" style="width: 10%;" type="number" value="{{state_PA}}" disabled/>
+				SET: <input id="state_SET" style="width: 10%;" type="number" value="{{state_SET}}" disabled/>
+				<br>
+				INT: <input id="state_INT" style="width: 10%;" type="number" value="{{state_INT}}" disabled/>
+				RESET: <input id="state_RESET" style="width: 10%;" type="number" value="{{state_RESET}}" disabled/>
+				<br>
+				ABORT: <input id="state_ABORT" style="width: 10%;" type="number" value="{{state_ABORT}}" disabled/>
+				FIRE: <input id="state_FIRE" style="width: 10%;" type="number" value="{{state_FIRE}}" disabled/>
+				<br>
+            <div id="log"></div>
+            </div>
+        </div>
+</body>
+</html>
